@@ -16,3 +16,7 @@ Wed Nov 29 2023 21:38:07 GMT+0530 (India Standard Time) GET /package/hotDeals
 Wed Nov 29 2023 21:38:09 GMT+0530 (India Standard Time) GET /package/destinations/India
 Wed Nov 29 2023 21:38:14 GMT+0530 (India Standard Time) GET /package/hotDeals
 Wed Nov 29 2023 21:38:28 GMT+0530 (India Standard Time) GET /package/hotDeals
+Wed Nov 29 2023 22:16:01 GMT+0530 (India Standard Time) GET /user/getBookings/null
+Wed Nov 29 2023 22:16:52 GMT+0530 (India Standard Time) GET /user/getBookings/null
+Wed Nov 29 2023 22:17:29 GMT+0530 (India Standard Time) GET /user/getBookings/null
+Wed Nov 29 2023 22:17:34 GMT+0530 (India Standard Time) GET /user/getBookings/null

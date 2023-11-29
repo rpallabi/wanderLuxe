@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import axios from "axios";
 import {backendUrlUser,backendUrlBooking} from '../BackendURL';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import {Link} from "react-router-dom";
 
 import Login from './login'
 class HotDeals extends Component {
@@ -104,7 +105,7 @@ class HotDeals extends Component {
     }
     render() {
         if(this.state.spinnerStatus){return(<div className="text-center bookingDesign"><ProgressSpinner></ProgressSpinner></div>)}
-        if(!this.state.loginStatus){return(<div><h4 className="text-danger bookingDesign">You have not logged in, Please Login to continue</h4><Login></Login></div> ) }
+        if(!this.state.loginStatus){return(<div><h4 className="text-danger bookingDesign">You have not logged in, Please <Link  to="/login"> Login</Link> to continue</h4></div> ) }
         else if(!this.state.dataStatus){return(<div><h4 className="text-danger bookingDesign">Sorry you do not have any planned trips yet, Enjoy exploring...</h4></div> )}
         else
         {
