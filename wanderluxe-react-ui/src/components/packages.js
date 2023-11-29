@@ -303,7 +303,7 @@ class Packages extends Component {
         if (this.state.spinnerStatus) { return (<div className="text-center"><ProgressSpinner></ProgressSpinner></div>) }
         if (this.state.goBooking === true) return <Redirect to={'/viewBookings'} />
         return (
-            <div>
+            <div style={{minHeight:"75vh"}}>
 
                 {/*
                     this.state.show ?

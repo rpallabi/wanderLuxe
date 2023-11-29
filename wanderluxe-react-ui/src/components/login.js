@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import axios from "axios";
 import { Redirect } from 'react-router-dom';
 import {backendUrlUser} from '../BackendURL';
+import { useAuth0 } from "@auth0/auth0-react";
+
 // import { InputText } from 'primereact/inputtext';
 // import { Button } from 'primereact/button';
 //import Register from "./register"
@@ -32,7 +34,6 @@ class Login extends Component {
             loginError:""
         }
     }
-
     handleClick = () => {
         this.setState({ loadRegister: true })
     }
@@ -115,7 +116,7 @@ class Login extends Component {
     }
 
     render() {
-        if (this.state.loadHome === true) return <Redirect to={'/home/' + this.state.userId} />
+        if (this.state.loadHome === true) return <Redirect to={'/home'} />
         //console.log('/home/' + this.state.userId);
         
         if (this.state.loadRegister === true) return <Redirect to={'/register'} />
@@ -167,6 +168,9 @@ class Login extends Component {
                                     <br/>
                                     <div>
                                      <button className="btn btn-primary form-control" onClick={this.handleClick} >Click here to Register</button>
+                                    </div>
+                                    <div>
+                                    {/* <button onClick={() => useAuth0()}>Log In</button> */}
                                     </div>
                                 </form>
                                 <br />

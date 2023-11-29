@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Auth0Provider } from '@auth0/auth0-react';
 import './index.css';
 import App from './App';
 
@@ -17,10 +18,21 @@ import UserReducer  from './reducers/UserReducer';//my work
 let store = createStore(UserReducer, applyMiddleware(logger));//creating store
 
 ReactDOM.render(
+  
     <Provider store={store} >
+      <Auth0Provider
+    domain="dev-ag6dojqlg1wnjyzo.us.auth0.com"
+    clientId="5SSNFsMHnvGYm4kCPXaa4mryJVbDzYLe"
+    authorizationParams={{
+      redirect_uri: window.location.origin
+    }}
+  >
       <App />
+      </Auth0Provider>   
     </Provider>,
+    
   document.getElementById('root')
+  
 );
 serviceWorker.unregister();
 

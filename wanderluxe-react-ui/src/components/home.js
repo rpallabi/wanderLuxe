@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import HotDeals from './hotdeals'
-
+import Axios from 'axios';
 //import {backendUrlUser,backendUrlPackage,backendUrlBooking} from '../BackendURL';
 
 class Home extends Component {
@@ -11,7 +11,10 @@ class Home extends Component {
         packagePage: false,
         successMessage: "",
         homePage: "",
-        emailId: ""
+        emailId: "",
+        country: null,
+        city: null,
+        region: '',
     };
 
     handleChange = (event) => {
@@ -31,7 +34,7 @@ class Home extends Component {
         //     this.setState({ successMessage: "Please Enter a mail" });
         // }
         // else {
-            this.setState({ successMessage: "Thank you for subscribing. Updates will be sent to the subscribing Email ID" });
+        this.setState({ successMessage: "Thank you for subscribing. Updates will be sent to the subscribing Email ID" });
         // }
     }
 
@@ -39,7 +42,29 @@ class Home extends Component {
         sessionStorage.setItem('continent', this.state.continent);
         this.setState({ packagePage: true });
     }
+    getPackagesByCountry = () => {
+        sessionStorage.setItem('continent', this.state.country);
+        console.log(sessionStorage.getItem('continent'),"Getting package by continent");
+        this.setState({continent:this.state.country})
+        this.setState({ packagePage: true });
+        
+    }
+    componentDidMount() {
+        let cityy, statee;
+        Axios.get('https://ipapi.co/json').then((loc) => {
+            console.log(loc.data);
+            cityy = loc.data.city;
+            statee = loc.data.region;
+            this.setState({ city: loc.data.city, state: loc.data.region, country: loc.data.country_name })
 
+        }).then(() => {
+            // console.log(this.city,this.state);
+
+        }).catch((err) => {
+            console.log(err);
+            // console.log(this.state.city,this.state.region);
+        })
+    }
     render() {
 
         if (this.state.packagePage === true) return <Redirect to={'/packages/' + this.state.continent} />
@@ -51,6 +76,7 @@ class Home extends Component {
                         <div className="mx-auto text-center">
                             <h1 className="mx-auto my-0 text-uppercase">Wanderluxe</h1>
                             <h2 className="text-white-50 mx-auto mt-2 mb-5">Where Every Journey Begins with Elegance</h2>
+                            <h3 className='text-warning mx-auto mt-2 mb-5'>Want to check packages from <span className='navstyleBrand' style={{cursor:'pointer'}} onClick={this.getPackagesByCountry}>{this.state.country}</span>?</h3>
                             <div className="form-inline d-flex">
                                 <input
                                     type="text"

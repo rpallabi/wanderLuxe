@@ -10,19 +10,109 @@ import Home from './components/home';
 import HotDeals from './components/hotdeals'
 import Bookings from './components/bookings'
 import Packages from './components/packages'
-
+import Axios from 'axios';
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      
       logged_userId: sessionStorage.getItem('userId'),
       logged_userName: sessionStorage.getItem('userName'),
       dialog_visible: false,
-      logged_out: false
+      logged_out: false,
+      latitude: null,
+      longitude: null,
+      country:null,
+      city:null,
+      region:null,
+      
     }
+    
   }
+  componentDidMount() {
+    let cityy,statee;
+    Axios.get('https://ipapi.co/json').then((loc)=>{
+              console.log(loc.data.region);
+              cityy=loc.data.city;
+              statee=loc.data.region;
+              this.setState({city:loc.data.city,country:loc.data.country_name})
+              this.setState({state:loc.data.region})
 
+            }).then(()=>{
+              // console.log(this.city,this.state);
+              
+            }).catch((err)=>{
+              console.log(err);
+              // console.log(this.state.city,this.state.region);
+            })
+    // if (navigator.geolocation) {
+    //   navigator.permissions
+    //     .query({ name: "geolocation" })
+    //     .then(function (result) {
+    //       if (result.state === "granted") {
+    //         console.log(result.state);
+    //         //If granted then you can directly call your function here
+    //         // navigator.geolocation.getCurrentPosition(function(position) {
+    //         //   console.log("Latitude is :", position.coords.latitude);
+    //         //   console.log("Longitude is :", position.coords.longitude);
+    //         // });
+            
+    //         Axios.get('https://ipapi.co/json').then((loc)=>{
+    //           console.log(loc.data);
+    //           cityy=loc.data.city;
+    //           statee=loc.data.region;
+    //         }).then(()=>{
+    //           // console.log(this.city,this.state);
+              
+    //         }).catch((err)=>{
+    //           console.log(err);
+    //           // console.log(this.state.city,this.state.region);
+    //         })
+            
+    //       } else if (result.state === "prompt") {
+    //         console.log(result.state);
+    //       } else if (result.state === "denied") {
+    //         //If denied then you have to show instructions to enable location
+    //         alert("Please grant permissio for location")
+    //       }
+    //       result.onchange = function () {
+    //         console.log(result.state);
+    //       };
+    //     });
+    // } else {
+    //   alert("Sorry Not available!");
+    // }
+    // console.log("'cityyy",cityy);
+    
+  }
+  getLocation=async()=>{
+    const loc= await Axios.get('https://ipapi.co/json');
+    this.setState({location:loc})
+    console.log(loc);
+  }
+  getCoordinates=()=> {
+    navigator.geolocation.getCurrentPosition(function(position) {
+      console.log("Latitude is :", position.coords.latitude);
+      console.log("Longitude is :", position.coords.longitude);
+    });
+  }
+  position = async () => {
+    await navigator.geolocation.getCurrentPosition(
+      position => this.setState({ 
+        latitude: position.coords.latitude, 
+        longitude: position.coords.longitude
+      }), 
+      err => console.log(err)
+    );
+    console.log(this.state.latitude)
+  }
+  //  success=(position) =>{
+  //   const latitude = position.coords.latitude;
+  //   const longitude = position.coords.longitude;
+  //   console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+  // }
+  
   onClick = (event) => {
     this.setState({ dialog_visible: true })
   }
@@ -54,11 +144,13 @@ class App extends Component {
 
     return (
       <div>
+        {console.log("Country",this.state.country,",",this.state.region,",",this.state.city)}
         <Router>
           <div className="App">
             <nav className="navbar navbar-expand-md sticky-top navbar transparent navbar-inverse">
               <div className="navbar-header ">
-                <Link className="navbar-brand navstyleBrand" to="/"><img src="./assets/wanderluxe.png" width="60 px" height="40 px" alt="WanderLuxe Logo"></img>Start Wandering</Link>
+                <Link className="navbar-brand navstyleBrand" to="/"><img src="./assets/wanderluxe.png" width="60 px" height="40 px" alt="WanderLuxe Logo"></img></Link>
+                {this.state.city?<span className=" navstyleBrand"><img src="./assets/pin.png" width="17 px" height="20 px" alt="location Logo"/> {this.state.city}, {this.state.country}</span>:'No Location'}
               </div>
               <ul className="navbar-nav ml-auto">
                 {this.state.logged_userId ? <li className="nav-item">

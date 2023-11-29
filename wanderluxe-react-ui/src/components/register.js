@@ -147,7 +147,7 @@ class Register extends Component {
         else
         return(
             <div>
-            <section id="registrationPage" className="registerSection">    {/* *ngIf="!registerPage"  */}
+            <section id="registrationPage" className="registerSection" style={{minHeight:'62vh'}}>    {/* *ngIf="!registerPage"  */}
                 <div className="container-fluid">
                     <div className="row">
                         <div className="col-md-4 offset-md-4 ">
@@ -177,6 +177,7 @@ class Register extends Component {
                                         <button type="submit" className="btn btn-primary form-control"disabled={!this.state.registrationFormValid.buttonActive}>Submit</button>
                                         <span className="text text-danger">{this.state.loginError}</span>
                                     </div>
+                                    <p>Already registered ? <Link  to="/login"> Login</Link> here</p>
                                     
                                 </form>
                             </div>
