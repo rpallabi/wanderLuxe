@@ -1,28 +1,30 @@
-import React, { Component } from "react";
-import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from "axios";
-import '../App.css'
-import {Link} from "react-router-dom";
-import {backendUrlUser} from '../BackendURL';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { Component } from "react";
+import { Link } from "react-router-dom";
+import '../App.css';
+import { backendUrlUser } from '../BackendURL';
+import Navbar from './navbar';
+
 class Register extends Component {
     constructor(props) {
         super(props);
         this.state = {
             registrationForm: {
-                name:"",
-                emailId:"",
+                name: "",
+                emailId: "",
                 contactNo: "",
                 password: ""
             },
             registrationFormMessage: {
-                name:"",
-                email:"",
+                name: "",
+                email: "",
                 contactNo: "",
                 password: ""
             },
             registrationFormValid: {
-                name:false,
-                email:false,
+                name: false,
+                email: false,
                 contactNo: false,
                 password: false,
                 buttonActive: false
@@ -31,11 +33,11 @@ class Register extends Component {
             errorMessage: "",
             loadLogin: false,
             userId: "",
-            loginError:""
+            loginError: ""
         }
     }
 
-    
+
 
     handleChange = (event) => {
         const target = event.target;
@@ -50,15 +52,15 @@ class Register extends Component {
 
     register = () => {
         const { registrationForm } = this.state;
-        axios.post(backendUrlUser+'/register', registrationForm)
+        axios.post(backendUrlUser + '/register', registrationForm)
             .then(response => {
                 //let userId = response.data.userId;
                 // sessionStorage.setItem("contactNo", response.data.contactNo);
                 // sessionStorage.setItem("userId", userId);
                 // sessionStorage.setItem("userName", response.data.name);
-                this.setState({ loadLogin: true})
+                this.setState({ loadLogin: true })
             }).catch(error => {
-                this.setState({errorMessage : error.message , loginError:"contact number already registered !"});
+                this.setState({ errorMessage: error.message, loginError: "contact number already registered !" });
                 sessionStorage.clear();
             })
     }
@@ -73,29 +75,31 @@ class Register extends Component {
         let formValid = this.state.registrationFormValid;
         switch (fieldName) {
             case "name":
-                let nameReges=/^[a-zA-Z]+([\s]{1}[a-zA-Z]+)*$/
+                let nameReges = /^[a-zA-Z]+([\s]{1}[a-zA-Z]+)*$/
                 if (value === '') {
                     fieldValidationErrors.name = 'Please enter your name'
                     formValid.name = false
-                } else if(!value.match(nameReges)){
-                    fieldValidationErrors.name="Please enter a valid name";
-                    formValid.name =false
+                } else if (!value.match(nameReges)) {
+                    fieldValidationErrors.name = "Please enter a valid name";
+                    formValid.name = false
                 }
-                else{
+                else {
                     fieldValidationErrors.name = ''
                     formValid.name = true
                 }
                 break;
             case "emailId":
-                let emailRegex=/^[a-zA-Z0-9]+@{1}[a-z]+\.{1}com$/
+                // let emailRegex = /^[a-zA-Z0-9.]+@{1}[a-z]+\.{1}com$/
+                //
+                let emailRegex=/^[a-zA-Z0-9.]+@{1}[a-z]+\.{1}com$/
                 if (value === '') {
                     fieldValidationErrors.email = 'Please enter your email id'
                     formValid.email = false
-                } else if(!value.match(emailRegex)){
-                    fieldValidationErrors.email="Please enter valid email id";
-                    formValid.email =false
+                } else if (!value.match(emailRegex)) {
+                    fieldValidationErrors.email = "Please enter valid email id";
+                    formValid.email = false
                 }
-                else{
+                else {
                     fieldValidationErrors.email = ''
                     formValid.email = true
                 }
@@ -117,9 +121,9 @@ class Register extends Component {
                 if (!value || value === "") {
                     fieldValidationErrors.password = "Password is manadatory";
                     formValid.password = false;
-                    } else if (!(value.match(/[A-Z]/) && value.match(/[a-z]/) && value.match(/[0-9]/) && value.match(/[_!@#$%^&*]/)) || (value.length<7 || value.length>20)) {
-                        fieldValidationErrors.password = "Please Enter a valid password"
-                        formValid.password = false;
+                } else if (!(value.match(/[A-Z]/) && value.match(/[a-z]/) && value.match(/[0-9]/) && value.match(/[_!@#$%^&*]/)) || (value.length < 7 || value.length > 20)) {
+                    fieldValidationErrors.password = "Please Enter a valid password"
+                    formValid.password = false;
                 } else {
                     fieldValidationErrors.password = "";
                     formValid.password = true;
@@ -128,14 +132,14 @@ class Register extends Component {
             default:
                 break;
         }
-        formValid.buttonActive = formValid.contactNo && formValid.password &&formValid.name && formValid.email;
+        formValid.buttonActive = formValid.contactNo && formValid.password && formValid.name && formValid.email;
         this.setState({
             registrationFormMessage: fieldValidationErrors,
             registrationFormValid: formValid,
             successMessage: ""
         });
     }
-    render(){
+    render() {
         if (this.state.loadLogin === true) return (
             <div class="container h-100 d-flex justify-content-center">
                 <div class="my-auto jumbotron">
@@ -143,49 +147,50 @@ class Register extends Component {
                     <h3 className="lead text-primary"><Link to="/login">Click here to Login</Link></h3>
                 </div>
             </div>
-          )
+        )
         else
-        return(
-            <div>
-            <section id="registrationPage" className="registerSection" style={{minHeight:'62vh'}}>    {/* *ngIf="!registerPage"  */}
-                <div className="container-fluid">
-                    <div className="row">
-                        <div className="col-md-4 offset-md-4 ">
-                            <h1>Join Us</h1>
-                                <form onSubmit={this.handleSubmit}>
-                                    <div className="form-group" >
-                                        <label htmlFor="name">Name<span className="text-danger">*</span></label>
-                                        <input type="text" value={this.state.registrationForm.name} onChange={this.handleChange} id="name" name="name" className="form-control" placeholder="Enter name"/>
-                                        <span className="text text-danger">{this.state.registrationFormMessage.name}</span>
-                                    </div>
-                                    <div className="form-group">
-                                        <label htmlFor="inputEmail1">Email address<span className="text-danger">*</span></label>
-                                        <input type="email" className="form-control" id="emailId" name="emailId" placeholder="Enter email" value={this.state.registrationForm.email} onChange={this.handleChange}/>
-                                        <span className="text text-danger">{this.state.registrationFormMessage.email}</span>
-                                    </div>
-                                    <div className="form-group">
-                                        <label htmlFor="contactNumber">Contact Number<span className="text-danger">*</span></label>
-                                        <input type="text" className="form-control" id="contactNumber" name="contactNo" placeholder="Enter your Contact Number" value={this.state.registrationForm.contactNo} onChange={this.handleChange}/>
-                                        <span className="text text-danger">{this.state.registrationFormMessage.contactNo}</span>
-                                    </div>
-                                    <div className="form-group">
-                                        <label htmlFor="password1">Password<span className="text-danger">*</span></label>
-                                        <input type="password" className="form-control" id="password" name="password" placeholder="Enter Password" value={this.state.registrationForm.password} onChange={this.handleChange}/>
-                                        <span className="text text-danger">{this.state.registrationFormMessage.password}</span>
-                                    </div>
-                                    <div className="form-group">
-                                        <button type="submit" className="btn btn-primary form-control"disabled={!this.state.registrationFormValid.buttonActive}>Submit</button>
-                                        <span className="text text-danger">{this.state.loginError}</span>
-                                    </div>
-                                    <p>Already registered ? <Link  to="/login"> Login</Link> here</p>
-                                    
-                                </form>
+            return (
+                <div>
+                    <Navbar />
+                    <section id="registrationPage" className="registerSection" style={{ minHeight: '62vh' }}>    {/* *ngIf="!registerPage"  */}
+                        <div className="container-fluid">
+                            <div className="row">
+                                <div className="col-md-4 offset-md-4 ">
+                                    <h1>Join Us</h1>
+                                    <form onSubmit={this.handleSubmit}>
+                                        <div className="form-group" >
+                                            <label htmlFor="name">Name<span className="text-danger">*</span></label>
+                                            <input type="text" value={this.state.registrationForm.name} onChange={this.handleChange} id="name" name="name" className="form-control" placeholder="Enter name" />
+                                            <span className="text text-danger">{this.state.registrationFormMessage.name}</span>
+                                        </div>
+                                        <div className="form-group">
+                                            <label htmlFor="inputEmail1">Email address<span className="text-danger">*</span></label>
+                                            <input type="email" className="form-control" id="emailId" name="emailId" placeholder="Enter email" value={this.state.registrationForm.email} onChange={this.handleChange} />
+                                            <span className="text text-danger">{this.state.registrationFormMessage.email}</span>
+                                        </div>
+                                        <div className="form-group">
+                                            <label htmlFor="contactNumber">Contact Number<span className="text-danger">*</span></label>
+                                            <input type="text" className="form-control" id="contactNumber" name="contactNo" placeholder="Enter your Contact Number" value={this.state.registrationForm.contactNo} onChange={this.handleChange} />
+                                            <span className="text text-danger">{this.state.registrationFormMessage.contactNo}</span>
+                                        </div>
+                                        <div className="form-group">
+                                            <label htmlFor="password1">Password<span className="text-danger">*</span></label>
+                                            <input type="password" className="form-control" id="password" name="password" placeholder="Enter Password" value={this.state.registrationForm.password} onChange={this.handleChange} />
+                                            <span className="text text-danger">{this.state.registrationFormMessage.password}</span>
+                                        </div>
+                                        <div className="form-group">
+                                            <button type="submit" className="btn btn-primary form-control" disabled={!this.state.registrationFormValid.buttonActive}>Submit</button>
+                                            <span className="text text-danger">{this.state.loginError}</span>
+                                        </div>
+                                        <p>Already registered ? <Link to="/login"> Login</Link> here</p>
+
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </section>
-            </div>
-        )
+                    </section>
+                </div>
+            )
     }
 }
 export default Register;

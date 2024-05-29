@@ -1,5 +1,0 @@
-Sun Sep 17 2023 19:17:11 GMT+0530 (India Standard Time) GET /user/getBookings/U1003
-Sun Sep 17 2023 19:17:12 GMT+0530 (India Standard Time) GET /user/getBookings/U1003
-Sun Sep 17 2023 19:17:15 GMT+0530 (India Standard Time) GET /package/hotDeals
-Sun Sep 17 2023 19:17:16 GMT+0530 (India Standard Time) GET /user/getBookings/U1003
-Sun Sep 17 2023 19:17:25 GMT+0530 (India Standard Time) GET /package/hotDeals

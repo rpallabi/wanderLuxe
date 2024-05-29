@@ -1,23 +1,21 @@
-import React, { Component } from 'react';
 import axios from 'axios';
-import { ProgressSpinner } from 'primereact/progressspinner';
 import { Sidebar } from 'primereact/sidebar';
-import { Button } from 'primereact/button';
-import { TabView, TabPanel } from 'primereact/tabview';
+import React, { Component } from 'react';
+
 import { InputSwitch } from 'primereact/inputswitch';
-import { BrowserRouter as Router, Route, Switch, Link, Redirect } from "react-router-dom";
-
-//import {backendUrlUser,backendUrlPackage,backendUrlBooking} from '../BackendURL';
+import { TabPanel, TabView } from 'primereact/tabview';
+import { Link, Navigate } from "react-router-dom";
 //import Book from './book';
-
-import { backendUrlUser, backendUrlPackage, backendUrlBooking } from '../BackendURL';
-
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { backendUrlBooking, backendUrlPackage } from '../BackendURL';
+import Navbar from './navbar';
 
 class Packages extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            donBooking: false,
             bookingForm: {
                 noOfPersons: 0,
                 date: "",
@@ -49,6 +47,8 @@ class Packages extends Component {
             ifLogin: "",
             visibleRight: false,
             goBooking: false,
+            flight: true,
+            gotoBooking: false,
         }
     }
 
@@ -85,6 +85,7 @@ class Packages extends Component {
     handleChange = (event) => {
         const target = event.target;
         const name = target.name;
+        this.setState({ donBooking: false })
         if (target.checked) {
             var value = target.checked;
         } else {
@@ -154,10 +155,10 @@ class Packages extends Component {
         let finalCheckOutDate = new Date(checkOutDateinMs);
         this.setState({ checkOutDate: finalCheckOutDate.toDateString() });
         if (this.state.bookingForm.flights) {
-            let totalCost = (-(-this.state.bookingForm.noOfPersons)) * this.state.deal.chargesPerPerson + this.state.deal.flightCharges;
+            let totalCost = (this.state.bookingForm.noOfPersons * this.state.deal.chargesPerPerson) + (this.state.deal.flightCharges * this.state.bookingForm.noOfPersons);
             this.setState({ totalCharges: totalCost });
         } else {
-            let totalCost = (-(-this.state.bookingForm.noOfPersons)) * this.state.deal.chargesPerPerson;
+            let totalCost = (this.state.bookingForm.noOfPersons * this.state.deal.chargesPerPerson);
             this.setState({ totalCharges: totalCost });
         }
     }
@@ -182,18 +183,36 @@ class Packages extends Component {
     loadBookingPage = (dealId) => {
         //console.log(dealId)
         //console.log(":here");
-        this.setState({ visibleRight: false });
+        // this.setState({ visibleRight: false });
+
         sessionStorage.setItem('noOfPersons', this.state.bookingForm.noOfPersons);
         sessionStorage.setItem('checkInDate', this.state.bookingForm.date);
         sessionStorage.setItem('flight', this.state.bookingForm.flights);
         sessionStorage.setItem('dealId', dealId);
-        this.setState({ show: true, bookingPage: true, showItinerary: false, dealId: dealId })
+        this.setState({ show: true, bookingPage: true, showItinerary: false, dealId: dealId, donBooking: true })
         if (sessionStorage.getItem("userId")) {
-            this.sumitBooking()
-            this.setState({ goBooking: true }, () => {
-                window.location.reload();
+            toast.success("Booking successfull", {
+                position: 'top-center'
             })
+            // this.sumitBooking()
+            this.setState({ goBooking: true })
             //window.location.reload();
+            const { bookingForm } = this.state;
+            this.setState({
+                bookingForm: {
+                    ...bookingForm, noOfPersons: 0,
+                    date: "",
+                    flights: false
+                }
+            });
+            const { bookingFormValid } = this.state;
+            this.setState({
+                bookingFormValid: {
+                    ...bookingFormValid, noOfPersons: false,
+                    date: false,
+                    buttonActive: false
+                }
+            });
 
         }
         else {
@@ -211,7 +230,7 @@ class Packages extends Component {
                     <div className="card bg-light text-dark package-card" key={mypackage.destinationId}>
                         <div className="card-body row">
                             <div className="col-md-4">
-                                <img className="package-image" src={(mypackage.imageUrl)} alt="destination comes here" />
+                                <img className="package-image" src={("http://localhost:4000/" + mypackage.imageUrl)} alt="destination comes here" />
                             </div>
                             <div className="col-md-5">
                                 <div className="featured-text text-center text-lg-left">
@@ -225,7 +244,7 @@ class Packages extends Component {
                             </div>
                             <div className="col-md-3">
                                 <h4>Prices Starting From:</h4>
-                                <div className="text-center text-success"><h6>{mypackage.chargesPerPerson}</h6></div><br /><br />
+                                <div className="text-center text-success"><h6>₹{mypackage.chargesPerPerson}</h6></div><br /><br />
                                 <div><button className="btn btn-primary book" onClick={() => this.getitinerary(mypackage)}>View Details</button></div><br />
                                 <div><button className="btn btn-primary book" onClick={() => this.openBooking(mypackage)}>Book </button>  </div>
                             </div>
@@ -293,134 +312,145 @@ class Packages extends Component {
             return null;
         }
     }
+bookandpay = (dealId) => {
 
-    handleSubmit = (event) => {
-        event.preventDefault();
-        this.calculateCharges();
-    }
+    this.setState({ gotoBooking: true }, () => {
+        sessionStorage.setItem("charges", this.state.totalCharges);
+        sessionStorage.setItem("name",this.state.deal.name)
+        sessionStorage.setItem("persons", this.state.bookingForm.noOfPersons);
+        sessionStorage.setItem('bookingdate',this.state.bookingForm.date)
+        sessionStorage.setItem("isFlight", this.state.bookingForm.flights);
+        sessionStorage.setItem("about",this.state.deal.details.about)
+        sessionStorage.setItem('dealId', dealId);
+        console.log("Lets pay...");
+        // window.location.reload();
+    })
+    
+}
+handleSubmit = (event) => {
+    event.preventDefault();
+    this.calculateCharges();
+}
 
-    render() {
-        if (this.state.spinnerStatus) { return (<div className="text-center"><ProgressSpinner></ProgressSpinner></div>) }
-        if (this.state.goBooking === true) return <Redirect to={'/viewBookings'} />
-        return (
-            <div style={{minHeight:"75vh"}}>
-
-                {/*
-                    this.state.show ?
-                        <div id="details" className="details-section">
-
-                            <div className="text-center">
-                                <ProgressSpinner></ProgressSpinner>
-                            </div>
-                        </div> : null
-                */}
-                {
-                    !this.state.packagePage ?
-                        (
-                            <div>
-                                {this.displayPackages()}
-                                {
-                                    this.state.errorMessage ?
-                                        (
-                                            <div className="offset-md-2">
-                                                <h2></h2><br />
-                                            </div>
-                                        )
-                                        : null
-                                }
-                            </div>
-                        ) : null
-                }
-                <Sidebar visible={this.state.showItinerary} position="right" className="p-sidebar-lg sidebarStyle" onHide={(e) => this.setState({ showItinerary: false })}>
-                    <h2>{this.state.deal.name}</h2>
-                    <TabView activeIndex={Number(this.state.index)} onTabChange={(e) => this.setState({ index: e.index })}>
-                        <TabPanel header="Overview">
-                            <div className="row">
-                                {this.state.deal ?
-                                    <div className="col-md-6 text-center">
-                                        <img className="package-image" src={(this.state.deal.imageUrl)} alt="destination comes here" />
-                                    </div> : null}
-                                <div className="col-md-6">
-                                    <h4>Package Includes:</h4>
-                                    <ul>
-                                        {this.state.showItinerary ? this.displayPackageInclusions() : null}
-                                    </ul>
-                                </div>
-                            </div>
-                            <div className="text-justify itineraryAbout">
-                                <h4>Tour Overview:</h4>
-                                {this.state.deal ? this.state.deal.details.about : null}
-                            </div>
-                        </TabPanel>
-                        <TabPanel header="Itinerary">
-                            {this.displayPackageHighlights()}
-                        </TabPanel>
-                        <TabPanel header="Book">
-                            <h4 className="itenaryAbout text-success">**Charges per person: Rs. {this.state.deal.chargesPerPerson}</h4>
-                            <form onSubmit={this.handleSubmit}>
-                                <div className="form-group">
-                                    <label htmlFor="noOfPersons">Number of Travelers:</label>
-                                    <input
-                                        type="number"
-                                        id="noOfPersons"
-                                        className="form-control"
-                                        name="noOfPersons"
-                                        value={this.state.bookingForm.noOfPersons}
-                                        onChange={this.handleChange}
-                                    />
-                                    {this.state.bookingFormErrorMessage.noOfPersons ?
-                                        <span className="text-danger">{this.state.bookingFormErrorMessage.noOfPersons}</span>
-                                        : null}
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="date">Trip start Date:</label>
-                                    <input
-                                        type="date"
-                                        id="date"
-                                        className="form-control"
-                                        name="date"
-                                        value={this.state.bookingForm.date}
-                                        onChange={this.handleChange}
-                                    />
-                                    {this.state.bookingFormErrorMessage.date ?
-                                        <span className="text-danger">{this.state.bookingFormErrorMessage.date}</span>
-                                        : null}
-                                </div>
-                                <div className="form-group">
-                                    <label>Include Include Flights:</label>&nbsp;
-                                    <InputSwitch name="flights" id="flights"
-                                        checked={this.state.bookingForm.flights}
-                                        onChange={this.handleChange} />
-                                </div>
-                                <div className="form-group">
-                                    <button id="buttonCalc" className="btn btn-primary" type="submit" disabled={!this.state.bookingFormValid.buttonActive}>Calculate Charges</button>&nbsp;
-                                </div>
-                            </form>
-                            {!this.state.totalCharges ?
-                                (
-                                    <React.Fragment><span>**Charges Exclude flight charges.</span><br /></React.Fragment>
-                                )
-                                :
-                                (
-                                    <h4 className="text-success">
-                                        Your trip ends on {this.state.checkOutDate} and
-                                        you will pay ${this.state.totalCharges}
-                                    </h4>
-                                )
+render() {
+    const { gotoBooking } = this.state;
+    console.log(gotoBooking);
+    if (gotoBooking) return <Navigate to={'/Payment'}/>
+    // if (this.state.goBooking === true) return <Redirect to={'/viewBookings'} />
+    return (
+        <div style={{ minHeight: "75vh" }}>
+            <Navbar />
+            {
+                !this.state.packagePage ?
+                    (
+                        <div className='hotDealsMain'>
+                            {this.displayPackages()}
+                            {
+                                this.state.errorMessage ?
+                                    (
+                                        <div className="offset-md-2">
+                                            <h2></h2><br />
+                                        </div>
+                                    )
+                                    : null
                             }
-
-                            <div className="text-center">
-                                <button disabled={!this.state.bookingFormValid.buttonActive} className="btn btn-success" onClick={() => this.loadBookingPage(this.state.deal.destinationId)}>Book</button>
-                                &nbsp; &nbsp; &nbsp;
-                                <button type="button" className="btn btn-link" onClick={(e) => this.setState({ showItinerary: false })}>Cancel</button>
+                        </div>
+                    ) : null
+            }
+            <Sidebar visible={this.state.showItinerary} position="right" className="p-sidebar-lg sidebarStyle" onHide={(e) => this.setState({ showItinerary: false })}>
+                <h2>{this.state.deal.name}</h2>
+                <TabView activeIndex={Number(this.state.index)} onTabChange={(e) => this.setState({ index: e.index })}>
+                    <TabPanel header="Overview">
+                        <div className="row">
+                            {this.state.deal ?
+                                <div className="col-md-6 text-center">
+                                    <img className="package-image" src={("http://localhost:4000/" + this.state.deal.imageUrl)} alt="destination comes here" />
+                                </div> : null}
+                            <div className="col-md-6">
+                                <h4>Package Includes:</h4>
+                                <ul>
+                                    {this.state.showItinerary ? this.displayPackageInclusions() : null}
+                                </ul>
                             </div>
-                        </TabPanel>
-                    </TabView>
-                </Sidebar>
+                        </div>
+                        <div className="text-justify itineraryAbout">
+                            <h4>Tour Overview:</h4>
+                            {this.state.deal ? this.state.deal.details.about : null}
+                        </div>
+                    </TabPanel>
+                    <TabPanel header="Itinerary">
+                        {this.displayPackageHighlights()}
+                    </TabPanel>
+                    <TabPanel header="Book">
+                        <h4 className="itenaryAbout text-success">**Charges per person: Rs. {this.state.deal.chargesPerPerson}</h4>
+                        <form onSubmit={this.handleSubmit}>
+                            <div className="form-group">
+                                <label htmlFor="noOfPersons">Number of Travelers:</label>
+                                <input
+                                    type="number"
+                                    id="noOfPersons"
+                                    className="form-control"
+                                    name="noOfPersons"
+                                    value={this.state.bookingForm.noOfPersons}
+                                    onChange={this.handleChange}
+                                />
+                                {this.state.bookingFormErrorMessage.noOfPersons ?
+                                    <span className="text-danger">{this.state.bookingFormErrorMessage.noOfPersons}</span>
+                                    : null}
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="date">Trip start Date:</label>
+                                <input
+                                    type="date"
+                                    id="date"
+                                    className="form-control"
+                                    name="date"
+                                    value={this.state.bookingForm.date}
+                                    onChange={this.handleChange}
+                                />
+                                {this.state.bookingFormErrorMessage.date ?
+                                    <span className="text-danger">{this.state.bookingFormErrorMessage.date}</span>
+                                    : null}
+                            </div>
+                            <div className="form-group">
+                                <label>Include Include Flights:</label>&nbsp;
+                                <InputSwitch name="flights" id="flights"
+                                    checked={this.state.bookingForm.flights}
+                                    onChange={this.handleChange} />
+                            </div>
+                            <div className="form-group">
+                                <button id="buttonCalc" className="btn btn-primary" type="submit" disabled={!this.state.bookingFormValid.buttonActive}>Calculate Charges</button>&nbsp;
+                            </div>
+                        </form>
+                        {!this.state.totalCharges ?
+                            (
+                                <React.Fragment><span>**Charges Exclude flight charges.</span><br /></React.Fragment>
+                            )
+                            :
+                            (
+                                <h4 className="text-success">
+                                    Your trip ends on {this.state.checkOutDate} and
+                                    you will pay ₹{this.state.totalCharges}
+                                </h4>
+                            )
+                        }
 
-            </div >
-        )
-    }
+                        <div className="text-center">
+                            <button disabled={!this.state.bookingFormValid.buttonActive} className="btn btn-success" onClick={()=>this.bookandpay(this.state.deal.destinationId)}>Book</button>
+
+                            &nbsp; &nbsp; &nbsp;
+                            <button type="button" className="btn btn-link" onClick={(e) => this.setState({ showItinerary: false, donBooking: false })}>Cancel</button>
+                        </div>
+                        {/* <div>
+                                {this.state.donBooking ? <span className='text-success'>Booking successsfull</span> : ""}
+                            </div> */}
+                    </TabPanel>
+                </TabView>
+            </Sidebar>
+            <ToastContainer />
+        </div >
+    )
+}
 }
 // <Redirect to="/book" />
 export default Packages;

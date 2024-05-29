@@ -8,6 +8,7 @@ router.post('/:userId/:destinationId', function (req, res, next) {
     let destinationId = req.params.destinationId;
     let checkInDate=req.body.checkInDate;
     let noOfPersons=req.body.noOfPersons
+    console.log("Booking.........");
     userservice.bookNow(userId,destinationId,checkInDate,noOfPersons).then(function (bookedData) {
         res.json(bookedData);
         res.status=200;

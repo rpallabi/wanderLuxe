@@ -6,6 +6,7 @@ class User {
         this.contactNo = obj.contactNo;
         this.password = obj.password;
         this.bookings = obj.bookings;
+        this.admin=obj.admin
     }
 }
 

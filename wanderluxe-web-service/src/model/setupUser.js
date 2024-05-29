@@ -2,8 +2,9 @@ const connection = require("../utilities/connections")
 
 
 let userData = [
-    { userId: "U1001", name: "abc", emailId: "abc@gmail.com", contactNo: 1234567890, password: "Abc@1234", bookings: ["B1001", "B1002"] },
-    { userId: "U1002", name: "Pallabi Roy", emailId: "rpallabi19@gmail.com", contactNo: 8777583467, password: "Pallabi@1", bookings: ["B1003"] }
+    { userId: "U1001", admin:false, name: "abc", emailId: "abc@gmail.com", contactNo: 1234561890, password: "Abc@1234", bookings: ["B1001", "B1002"] },
+    { userId: "U1002", admin:true, name: "Pallabi Roy", emailId: "rpallabi19@gmail.com", contactNo: 8777583467, password: "Pallabi@1", bookings: ["B1003"] },
+    { userId: "U1003", admin:false, name: "Test User", emailId: "test@gmail.com", contactNo: 1234567890, password: "Test@12345", bookings: ["B1003"] }
 ]
 
 

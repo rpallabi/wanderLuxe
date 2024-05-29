@@ -1,18 +1,24 @@
-import React, { Component } from 'react';
 import axios from 'axios';
-import { ProgressSpinner } from 'primereact/progressspinner';
-import { Sidebar } from 'primereact/sidebar';
-import { TabView, TabPanel } from 'primereact/tabview';
 import { InputSwitch } from 'primereact/inputswitch';
-import { BrowserRouter as Link, Redirect } from "react-router-dom";
-import {backendUrlPackage,backendUrlBooking} from '../BackendURL';
-
+import { Sidebar } from 'primereact/sidebar';
+import { TabPanel, TabView } from 'primereact/tabview';
+import React, { Component } from 'react';
+import { BrowserRouter as Link, Navigate } from "react-router-dom";
+import { backendUrlBooking, backendUrlPackage } from '../BackendURL';
+// Importing toastify module
+// import { toast } from "react-toastify";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+// Import toastify css file
+// import "react-toastify/dist/ReactToastify.css";
+import Navbar from './navbar';
 
 
 class Packages extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            donBooking: false,
             bookingForm: {
                 noOfPersons: 0,
                 date: "",
@@ -30,7 +36,7 @@ class Packages extends Component {
             bookingPage: false,
             show: false,
             showItinerary: false,
-            goBooking:false,
+            goBooking: false,
             packages: [],
             errorMessage: "",
             successMessage: "",
@@ -42,18 +48,20 @@ class Packages extends Component {
             packagePage: false,
             checkOutDate: new Date(),
             visibleRight: false,
-            ifLogin:"",
-            spinnerStatus:false
+            ifLogin: "",
+            spinnerStatus: false,
+            flight: true,
+            gotoBooking: false,
         }
     }
 
 
     getHotDeals = () => {
-        this.setState({spinnerStatus:true})
-        axios.get(backendUrlPackage+"/hotDeals")
+        this.setState({ spinnerStatus: true })
+        axios.get(backendUrlPackage + "/hotDeals")
             .then((response) => {
                 this.setState({ packages: response.data, show: false, errorMessage: null })
-                this.setState({spinnerStatus:false})
+                this.setState({ spinnerStatus: false })
             })
             .catch((error) => {
                 this.setState({ errorMessage: error.message, packages: null })
@@ -68,7 +76,8 @@ class Packages extends Component {
     handleChange = (event) => {
         const target = event.target;
         const name = target.name;
-        if(target.checked) {
+        this.setState({ donBooking: false })
+        if (target.checked) {
             var value = target.checked;
         } else {
             value = target.value;
@@ -77,7 +86,7 @@ class Packages extends Component {
         this.setState({
             bookingForm: { ...bookingForm, [name]: value }
         });
-    
+
         this.validateField(name, value);
 
     }
@@ -120,7 +129,7 @@ class Packages extends Component {
             default:
                 break;
         }
-     
+
         formValid.buttonActive = formValid.noOfPersons && formValid.date;
         this.setState({
             loginformErrorMessage: fieldValidationErrors,
@@ -134,13 +143,13 @@ class Packages extends Component {
         let oneDay = 24 * 60 * 60 * 1000;
         let checkInDate = new Date(this.state.bookingForm.date);
         let checkOutDateinMs = Math.round(Math.abs((checkInDate.getTime() + (this.state.deal.noOfNights) * oneDay)));
-        let finalCheckOutDate=new Date(checkOutDateinMs);
+        let finalCheckOutDate = new Date(checkOutDateinMs);
         this.setState({ checkOutDate: finalCheckOutDate.toDateString() });
         if (this.state.bookingForm.flights) {
-            let totalCost = (-(-this.state.bookingForm.noOfPersons)) * this.state.deal.chargesPerPerson + this.state.deal.flightCharges;
+            let totalCost = (this.state.bookingForm.noOfPersons * this.state.deal.chargesPerPerson) + (this.state.deal.flightCharges * this.state.bookingForm.noOfPersons);
             this.setState({ totalCharges: totalCost });
         } else {
-            let totalCost = (-(-this.state.bookingForm.noOfPersons)) * this.state.deal.chargesPerPerson;
+            let totalCost = (this.state.bookingForm.noOfPersons * this.state.deal.chargesPerPerson);
             this.setState({ totalCharges: totalCost });
         }
     }
@@ -152,39 +161,63 @@ class Packages extends Component {
     openBooking = (selectedPackage) => {
         this.setState({ index: 2, deal: selectedPackage, showItinerary: true })
     }
-    sumitBooking=()=>{
-        axios.post(backendUrlBooking+'/'+sessionStorage.getItem("userId")+'/'+sessionStorage.getItem("dealId"),{checkInDate:sessionStorage.getItem("checkInDate"),noOfPersons:sessionStorage.getItem("noOfPersons")})
+    sumitBooking = () => {
+        axios.post(backendUrlBooking + '/' + sessionStorage.getItem("userId") + '/' + sessionStorage.getItem("dealId"), { checkInDate: sessionStorage.getItem("checkInDate"), noOfPersons: sessionStorage.getItem("noOfPersons") })
             .then(response => {
-               
+
                 //this.setState({ loadLogin: true})
             }).catch(error => {
-                this.setState({errorMessage : error.message});
+                this.setState({ errorMessage: error.message });
                 sessionStorage.clear();
             })
     }
     loadBookingPage = (dealId) => {
-        console.log(dealId)
-        console.log(":here");
-        this.setState({ visibleRight: false });
+        // this.setState({ visibleRight: false });
+
         sessionStorage.setItem('noOfPersons', this.state.bookingForm.noOfPersons);
         sessionStorage.setItem('checkInDate', this.state.bookingForm.date);
         sessionStorage.setItem('flight', this.state.bookingForm.flights);
         sessionStorage.setItem('dealId', dealId);
-        this.setState({ show:true, bookingPage: true, showItinerary: false, dealId: dealId })
-        if(sessionStorage.getItem("userId")){
-            this.sumitBooking()
-            this.setState({goBooking:true},()=>{
-                window.location.reload();
+        this.setState({ show: true, bookingPage: true, showItinerary: false, dealId: dealId, donBooking: true })
+        if (sessionStorage.getItem("userId")) {
+            toast.success("Booking successfull", {
+                position: 'top-center'
             })
-            //window.location.reload();
+            this.sumitBooking()
+            this.setState({ goBooking: true })
+            // this.setState({ showItinerary: false })
+            // window.location.reload();
+            const { bookingForm } = this.state;
+            this.setState({
+                bookingForm: {
+                    ...bookingForm, noOfPersons: 0,
+                    date: "",
+                    flights: false
+                }
+            });
+            const { bookingFormValid } = this.state;
+            this.setState({
+                bookingFormValid: {
+                    ...bookingFormValid, noOfPersons: false,
+                    date: false,
+                    buttonActive: false
+                }
+            });
+
         }
-        else{
+        else {
             alert("Please Login to Book any package")
-            
-            this.setState({ifLogin:"Please Login to Book any package"})
+
+            this.setState({ ifLogin: "Please Login to Book any package" })
         }
     }
-
+    notify = () => {
+        // Calling toast method by passing string
+        console.log("Toasting !");
+        toast("Booking successfull !!", {
+            position: toast.POSITION.TOP_LEFT,
+        });
+    };
     displayPackages = () => {
         if (!this.state.errorMessage) {
             let packagesArray = [];
@@ -193,7 +226,7 @@ class Packages extends Component {
                     <div className="card bg-light text-dark package-card" key={mypackage.destinationId}>
                         <div className="card-body row">
                             <div className="col-md-4">
-                                <img className="package-image" src={(mypackage.imageUrl)} alt="destination comes here" />
+                                <img className="package-image" src={("http://localhost:4000/" + mypackage.imageUrl)} alt="destination comes here" />
                             </div>
                             <div className="col-md-5">
                                 <div className="featured-text text-center text-lg-left">
@@ -232,8 +265,8 @@ class Packages extends Component {
 
     displayPackageInclusions = () => {
         const packageInclusions = this.state.deal.details.itinerary.packageInclusions;
-        if(this.state.deal) {
-            return packageInclusions.map((pack,index)=> (<li key={index}>{pack}</li>) )
+        if (this.state.deal) {
+            return packageInclusions.map((pack, index) => (<li key={index}>{pack}</li>))
         }
         else {
             return null;
@@ -251,15 +284,15 @@ class Packages extends Component {
         );
         packageHighLightsArray.push(firstElement);
         if (this.state.deal) {
-            this.state.deal.details.itinerary.dayWiseDetails.restDaysSightSeeing.map((packageHighlight,index)=>{
-                    let element=(
-                        <div key={index+1}>
+            this.state.deal.details.itinerary.dayWiseDetails.restDaysSightSeeing.map((packageHighlight, index) => {
+                let element = (
+                    <div key={index + 1}>
                         <h5>Day {this.state.deal.details.itinerary.dayWiseDetails.restDaysSightSeeing.indexOf(packageHighlight) + 2}</h5>
                         <div>{packageHighlight}</div>
                     </div>
-                    );
-                    packageHighLightsArray.push(element)
-                });
+                );
+                packageHighLightsArray.push(element)
+            });
             let lastElement = (
                 <div key={666}>
                     <h5>Day {this.state.deal.details.itinerary.dayWiseDetails.restDaysSightSeeing.length + 2}</h5>
@@ -267,7 +300,7 @@ class Packages extends Component {
                     <div className="text-danger">
                         **This itinerary is just a suggestion, itinerary can be modified as per requirement. <a
                             href="#contact-us">Contact us</a> for more details.
-                        </div>
+                    </div>
                 </div>
             );
             packageHighLightsArray.push(lastElement);
@@ -276,23 +309,38 @@ class Packages extends Component {
             return null;
         }
     }
+    bookandpay = (dealId) => {
 
+        this.setState({ gotoBooking: true }, () => {
+            sessionStorage.setItem("charges", this.state.totalCharges);
+            sessionStorage.setItem("name", this.state.deal.name)
+            sessionStorage.setItem("persons", this.state.bookingForm.noOfPersons);
+            sessionStorage.setItem('bookingdate', this.state.bookingForm.date)
+            sessionStorage.setItem("isFlight", this.state.bookingForm.flights);
+            sessionStorage.setItem("about", this.state.deal.details.about)
+            sessionStorage.setItem('dealId', dealId);
+            console.log("Lets pay...");
+            // window.location.reload();
+        })
+
+    }
     handleSubmit = (event) => {
         event.preventDefault();
         this.calculateCharges();
     }
 
     render() {
-        if(this.state.spinnerStatus){return(<div className="text-center"><ProgressSpinner></ProgressSpinner></div>)}
-
-        if (this.state.goBooking === true) return <Redirect to={'/viewBookings'} />
+        const { gotoBooking } = this.state;
+        console.log(gotoBooking);
+        if (gotoBooking) return <Navigate to={'/Payment'} />
+        // if (this.state.goBooking === true) return <Redirect to={{ pathname: '/home', state: { source: 'booked' } }} />
         return (
             <div>
-                
+                <Navbar />
                 {
                     !this.state.packagePage ?
                         (
-                            <div>
+                            <div className='hotDealsMain'>
                                 {this.displayPackages()}
                                 {
                                     this.state.errorMessage ?
@@ -314,13 +362,13 @@ class Packages extends Component {
                             <div className="row">
                                 {this.state.deal ?
                                     <div className="col-md-6 text-center">
-                                        <img className="package-image" src={(this.state.deal.imageUrl)} alt="destination comes here" />
+                                        <img className="package-image" src={("http://localhost:4000/" + this.state.deal.imageUrl)} alt="destination comes here" />
                                     </div> : null}
 
                                 <div className="col-md-6">
                                     <h4>Package Includes:</h4>
                                     <ul>
-                                        {this.state.showItinerary ? this.displayPackageInclusions():null}
+                                        {this.state.showItinerary ? this.displayPackageInclusions() : null}
                                     </ul>
                                 </div>
                             </div>
@@ -375,26 +423,29 @@ class Packages extends Component {
                             </form>
                             {!this.state.totalCharges ?
                                 (
-                                    <React.Fragment><span>**Charges Exclude flight charges.</span><br/></React.Fragment>
+                                    <React.Fragment><span>**Charges Exclude flight charges.</span><br /></React.Fragment>
                                 )
                                 :
                                 (
                                     <h4 className="text-success">
                                         Your trip ends on {this.state.checkOutDate} and
-                                        you will pay ${this.state.totalCharges}
+                                        you will pay ₹{this.state.totalCharges}
                                     </h4>
                                 )
                             }
 
                             <div className="text-center">
-                                <button disabled={!this.state.bookingFormValid.buttonActive} className="btn btn-success" onClick={() => this.loadBookingPage(this.state.deal.destinationId)}>Book</button>
+                                <button disabled={!this.state.bookingFormValid.buttonActive} className="btn btn-success" onClick={() => this.bookandpay(this.state.deal.destinationId)}>Book</button>
                                 &nbsp; &nbsp; &nbsp;
-                                <button type="button" className="btn btn-link" onClick={(e) => this.setState({showItinerary:false})}>Cancel</button>
+                                <button type="button" className="btn btn-link" onClick={(e) => this.setState({ showItinerary: false, donBooking: false })}>Cancel</button>
                             </div>
+                            {/* <div>
+                                {this.state.donBooking ? <span className='text-success'>Booking successsfull</span> : ""}
+                            </div> */}
                         </TabPanel>
                     </TabView>
                 </Sidebar>
-                
+                <ToastContainer />
             </div >
         )
     }

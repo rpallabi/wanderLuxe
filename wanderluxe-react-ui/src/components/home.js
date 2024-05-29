@@ -1,22 +1,54 @@
+import Axios from "axios";
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
-import HotDeals from './hotdeals'
-import Axios from 'axios';
-//import {backendUrlUser,backendUrlPackage,backendUrlBooking} from '../BackendURL';
+import { Link, Navigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import HotDeals from './hotdeals';
+import { backendUrlUser } from '../BackendURL';
 
 class Home extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
 
-    state = {
-        continent: "",
-        packagePage: false,
-        successMessage: "",
-        homePage: "",
-        emailId: "",
-        country: null,
-        city: null,
-        region: '',
-    };
+            logged_userId: sessionStorage.getItem('userId'),
+            logged_userName: sessionStorage.getItem('userName'),
+            dialog_visible: false,
+            logged_out: false,
+            latitude: null,
+            longitude: null,
+            country: null,
+            city: null,
+            region: null,
+            continent: "",
+            packagePage: false,
+            successMessage: "",
+            homePage: "",
+            emailId: "",
+            emailError: ""
 
+        }
+
+    }
+    onClick = (event) => {
+        this.setState({ dialog_visible: true })
+    }
+
+    onHide = (event) => {
+        this.setState({ dialog_visible: false });
+    }
+
+    logout = () => {
+        console.log(this.state.dialog_visible);
+        this.setState({ dialog_visible: false });
+        sessionStorage.clear();
+        this.setState({ logged_out: true });
+        window.location.reload();
+    }
+
+    confirm_logout = () => {
+        this.setState({ dialog_visible: true });
+    }
     handleChange = (event) => {
         const target = event.target;
         const name = target.name;
@@ -25,17 +57,26 @@ class Home extends Component {
     }
 
     handleClick = (event) => {
+        let emailRegex = /^[a-zA-Z0-9]+@{1}[a-z]+\.{1}com$/
         event.preventDefault();
-        // const target = event.target;
-        // const name = target.name;
-        // const value = target.value;
-        // console.log(name,value);
-        // if (value === '') {
-        //     this.setState({ successMessage: "Please Enter a mail" });
-        // }
-        // else {
-        this.setState({ successMessage: "Thank you for subscribing. Updates will be sent to the subscribing Email ID" });
-        // }
+        if (this.state.emailId.match(emailRegex)) {
+
+            Axios.post(backendUrlUser + '/subscribe', { "email": this.state.emailId })
+                .then(response => {
+                    toast("Thank you for subscribing. Updates will be sent to the subscribing Email ID", {
+                        position: 'top-center'
+                    })
+
+                }).catch(error => {
+                    console.log("Subscription failed");
+                    console.log(error.message);
+                })
+        }
+        else {
+            toast.error("Invalid Email !", {
+                position: 'top-center'
+            })
+        }
     }
 
     getPackages = () => {
@@ -44,10 +85,10 @@ class Home extends Component {
     }
     getPackagesByCountry = () => {
         sessionStorage.setItem('continent', this.state.country);
-        console.log(sessionStorage.getItem('continent'),"Getting package by continent");
-        this.setState({continent:this.state.country})
+        console.log(sessionStorage.getItem('continent'), "Getting package by continent");
+        this.setState({ continent: this.state.country })
         this.setState({ packagePage: true });
-        
+
     }
     componentDidMount() {
         let cityy, statee;
@@ -67,16 +108,17 @@ class Home extends Component {
     }
     render() {
 
-        if (this.state.packagePage === true) return <Redirect to={'/packages/' + this.state.continent} />
+        if (this.state.packagePage === true) return <Navigate to={'/packages/' + this.state.continent} />
 
         return (
             <div>
+
                 <header className="masthead book-page" id="page-top">
                     <div className="container d-flex h-100 align-items-center">
                         <div className="mx-auto text-center">
                             <h1 className="mx-auto my-0 text-uppercase">Wanderluxe</h1>
                             <h2 className="text-white-50 mx-auto mt-2 mb-5">Where Every Journey Begins with Elegance</h2>
-                            <h3 className='text-warning mx-auto mt-2 mb-5'>Want to check packages from <span className='navstyleBrand' style={{cursor:'pointer'}} onClick={this.getPackagesByCountry}>{this.state.country}</span>?</h3>
+                            <h3 className='text-warning mx-auto mt-2 mb-5'>Want to check packages from <span className='navstyleBrand' style={{ cursor: 'pointer' }} onClick={this.getPackagesByCountry}>{this.state.country}</span>?</h3>
                             <div className="form-inline d-flex">
                                 <input
                                     type="text"
@@ -132,16 +174,18 @@ class Home extends Component {
                                         type="submit"
                                         className="btn btn-outline-warning btnConfig mx-auto"
                                         onClick={this.handleClick}
+                                        disabled={!this.state.emailId}
                                     >
                                         Subscribe
                                     </button>
+                                    <ToastContainer />
                                 </form>
                             </div>
                         </div>
                         <br />
-                        {this.state.successMessage ?
-                            <span className="text-danger text-center">{this.state.successMessage}</span> :
-                            null}
+                        {/* {this.state.successMessage ?
+                            <span className="text-success text-center">{this.state.successMessage}</span> :
+                            null} */}
                     </div>
                 </section>
 
@@ -171,7 +215,7 @@ class Home extends Component {
 
                             <div className="col-md-4 mb-3 mb-md-0">
                                 <div className="card py-4 h-100">
-                                    <div className="card-body text-center">
+                                    <div className="card-body text-center ">
                                         <h4 className="text-uppercase m-0">Phone</h4>
                                         <hr className="my-4" />
                                         <div className="small text-black-50">+91 1234123456</div>
