@@ -43,6 +43,7 @@ function AddHotDeal() {
   const [validatediscounts, setValidatediscounts] = useState(false)
   const [validateavailability, setValidateavailability] = useState(false)
   const [validateformFile, setValidateformFile] = useState(false)
+  const [successSubmit, setSuccessSubmit]=useState("")
   // ===========================================================
   function itinerary(event) {
     let day = event.target.value;
@@ -186,6 +187,7 @@ function AddHotDeal() {
         // setValidateformFile(false)
         // v=false
         // setname('')
+        setSuccessSubmit("Data uploaded successfully ! Please refresh the page...")
       })
       .catch(error => {
         console.log(error.message);
@@ -401,6 +403,12 @@ function AddHotDeal() {
           </div>
         </div>
         <br />
+        <div className='row'>
+        <div className='col-md-5'></div>
+          <div className='col-md-2 d-grid gap-2'>{successSubmit?<span className='text-success'>{successSubmit}</span>:<span></span>}</div>
+          <div className='col-md-5'></div>
+          
+        </div>
         <div className='row'>
           <div className='col-md-5'></div>
           <div className='col-md-2 d-grid gap-2'><button className="btn btn-outline-primary" style={{marginBottom:"10px"}} type="button" disabled={!v} onClick={submitData}>Submit</button></div>

@@ -22,12 +22,9 @@ app.use('/book', bookRouter);
 app.use('/',sendMail);
 app.use(myErrorLogger);
 
-// app.post('/upload',(req,res)=>{
-//     console.log(req.file);
-// })
-
 
 app.listen(4000);
+console.log("Please run http://localhost:4000/user/setup to setup database on browser");
 console.log("Server listening in port 4000 ");
 
 module.exports = app;

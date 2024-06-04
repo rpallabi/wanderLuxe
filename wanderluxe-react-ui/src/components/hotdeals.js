@@ -310,18 +310,24 @@ class Packages extends Component {
         }
     }
     bookandpay = (dealId) => {
-
-        this.setState({ gotoBooking: true }, () => {
-            sessionStorage.setItem("charges", this.state.totalCharges);
-            sessionStorage.setItem("name", this.state.deal.name)
-            sessionStorage.setItem("persons", this.state.bookingForm.noOfPersons);
-            sessionStorage.setItem('bookingdate', this.state.bookingForm.date)
-            sessionStorage.setItem("isFlight", this.state.bookingForm.flights);
-            sessionStorage.setItem("about", this.state.deal.details.about)
-            sessionStorage.setItem('dealId', dealId);
-            console.log("Lets pay...");
-            // window.location.reload();
-        })
+        if (sessionStorage.getItem("userId")) {
+            this.setState({ gotoBooking: true }, () => {
+                sessionStorage.setItem("charges", this.state.totalCharges);
+                sessionStorage.setItem("name", this.state.deal.name)
+                sessionStorage.setItem("persons", this.state.bookingForm.noOfPersons);
+                sessionStorage.setItem('bookingdate', this.state.bookingForm.date)
+                sessionStorage.setItem("isFlight", this.state.bookingForm.flights);
+                sessionStorage.setItem("about", this.state.deal.details.about)
+                sessionStorage.setItem('dealId', dealId);
+                console.log("Lets pay...");
+                // window.location.reload();
+            })
+        }
+        else {
+            this.setState({ gotoBooking: false })
+            alert("Please Login to Book any package")
+            this.setState({ ifLogin: "Please Login to Book any package" })
+        }
 
     }
     handleSubmit = (event) => {
